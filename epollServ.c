@@ -75,11 +75,11 @@ int main (int argc, char *argv[])
   if (sfd == -1)
     abort ();
 
-  int flags = fcntl (sfd, F_GETFL, 0);
+  int flags = fcntl (sfd, F_GETFL, 0);  // change socket fd to be non-blocking
   flags |= O_NONBLOCK;
   fcntl (sfd, F_SETFL, flags);
 
-  s = listen (sfd, SOMAXCONN);  // start server socket listening and queue limit of 128
+  s = listen (sfd, SOMAXCONN);  // mark socket as passive socket type 
   if (s == -1)
     {
       perror ("listen");
@@ -110,7 +110,7 @@ int main (int argc, char *argv[])
     {
       int n, i;
 
-      n = epoll_wait (efd, events, MAXEVENTS, -1);
+      n = epoll_wait (efd, events, MAXEVENTS, -1);  // Block until some events happen, no timeout
       for (i = 0; i < n; i++)
 	{
 	  
@@ -122,7 +122,7 @@ int main (int argc, char *argv[])
               /* An error has occured on this fd, or the socket is not
                  ready for reading (why were we notified then?) */
 	      fprintf (stderr, "epoll error\n");
-	      close (events[i].data.fd);
+	      close (events[i].data.fd);  // Closing the fd removes from the epoll monitored list
               clientMap.erase(events[i].data.fd);
 	      continue;
 	    }
